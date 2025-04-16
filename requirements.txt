@@ -1,6 +1,4 @@
-flask==2.0.1
-nltk==3.6.3
+Flask==2.3.3
+nltk==3.8.1
 scikit-fuzzy==0.4.2
-numpy
-matplotlib==3.4.3
-python-docx==0.8.11
+numpy==1.26.4
