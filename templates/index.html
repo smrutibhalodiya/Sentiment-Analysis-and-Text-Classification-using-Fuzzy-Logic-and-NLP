@@ -1,0 +1,552 @@
+<!-- templates/index.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fuzzy Sentiment Analysis</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.1.3/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+          --primary-color: #4361ee;
+          --primary-light: #4895ef;
+          --primary-dark: #3f37c9;
+          --secondary-color: #f72585;
+          --accent-color: #7209b7;
+          --neutral-light: #f8f9fa;
+          --neutral-mid: #e9ecef;
+          --neutral-dark: #6c757d;
+          --negative-color: #e63946;
+          --neutral-color: #457b9d;
+          --positive-color: #258e3a;
+          --font-main: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+          --shadow-sm: 0 2px 10px rgba(0, 0, 0, 0.05);
+          --shadow-md: 0 4px 20px rgba(0, 0, 0, 0.08);
+          --shadow-lg: 0 10px 30px rgba(0, 0, 0, 0.12);
+          --gradient-bg: linear-gradient(135deg, #f5f7fa 0%, #e4e9f2 100%);
+          --gradient-accent: linear-gradient(135deg, var(--primary-light) 0%, var(--primary-dark) 100%);
+          --gradient-sentiment: linear-gradient(to right, var(--negative-color), #ffb703, var(--positive-color));
+          --radius-sm: 8px;
+          --radius-md: 12px;
+          --radius-lg: 20px;
+          --transition: all 0.3s ease;
+        }
+        
+        body {
+          font-family: var(--font-main);
+          background: var(--gradient-bg);
+          color: #333;
+          padding: 2rem 0;
+          min-height: 100vh;
+          line-height: 1.6;
+        }
+        
+        .container {
+          max-width: 900px;
+          padding: 0 1.5rem;
+        }
+        
+        .app-title {
+          position: relative;
+          display: inline-block;
+          margin-bottom: 0.5rem;
+        }
+        
+        .app-title::after {
+          content: '';
+          position: absolute;
+          bottom: -5px;
+          left: 0;
+          width: 60px;
+          height: 4px;
+          background: var(--primary-color);
+          border-radius: 2px;
+        }
+        
+        .lead {
+          color: var(--neutral-dark);
+          margin-bottom: 2rem;
+        }
+        
+        .card {
+          background-color: white;
+          border: none;
+          border-radius: var(--radius-md);
+          box-shadow: var(--shadow-md);
+          margin-bottom: 2.5rem;
+          overflow: hidden;
+          transition: var(--transition);
+        }
+        
+        .card:hover {
+          box-shadow: var(--shadow-lg);
+          transform: translateY(-2px);
+        }
+        
+        .card-header {
+          background-color: white;
+          border-bottom: 1px solid var(--neutral-mid);
+          padding: 1.8rem 1.8rem 1rem;
+        }
+        
+        .card-header h4 {
+          font-weight: 600;
+          color: var(--primary-dark);
+          margin-bottom: 0.5rem;
+        }
+        
+        .card-body {
+          padding: 1.8rem;
+        }
+        
+        .nav-tabs {
+          border-bottom: none;
+          margin-bottom: 2.5rem;
+          justify-content: center;
+          gap: 1rem;
+        }
+        
+        .nav-tabs .nav-link {
+          font-weight: 500;
+          border: none;
+          border-radius: var(--radius-sm);
+          padding: 0.75rem 1.5rem;
+          color: var(--neutral-dark);
+          transition: var(--transition);
+        }
+        
+        .nav-tabs .nav-link:hover {
+          background-color: rgba(67, 97, 238, 0.05);
+          color: var(--primary-color);
+        }
+        
+        .nav-tabs .nav-link.active {
+          color: white;
+          background: var(--gradient-accent);
+          box-shadow: 0 4px 15px rgba(67, 97, 238, 0.35);
+        }
+        
+        textarea.form-control {
+          border: 1px solid var(--neutral-mid);
+          border-radius: var(--radius-sm);
+          min-height: 140px;
+          padding: 1rem;
+          font-size: 1rem;
+          transition: var(--transition);
+        }
+        
+        textarea.form-control:focus {
+          border-color: var(--primary-light);
+          box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.15);
+        }
+        
+        .btn-primary {
+          background: var(--primary-color);
+          border: none;
+          border-radius: var(--radius-sm);
+          padding: 0.75rem 1.5rem;
+          font-weight: 500;
+          transition: var(--transition);
+          box-shadow: 0 4px 15px rgba(67, 97, 238, 0.3);
+        }
+        
+        .btn-primary:hover, .btn-primary:focus {
+          background: var(--primary-dark);
+          transform: translateY(-2px);
+          box-shadow: 0 6px 20px rgba(67, 97, 238, 0.4);
+        }
+        
+        .sentiment-meter {
+          height: 40px;
+          border-radius: var(--radius-lg);
+          background: var(--gradient-sentiment);
+          position: relative;
+          margin: 1.5rem 0 0.5rem;
+          box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+        
+        .sentiment-pointer {
+          position: absolute;
+          top: -15px;
+          width: 4px;
+          height: 70px;
+          background-color: #333;
+          transform: translateX(-50%);
+        }
+        
+        .sentiment-pointer::after {
+          content: '';
+          position: absolute;
+          bottom: 8px;
+          left: 50%;
+          transform: translateX(-50%);
+          width: 12px;
+          height: 12px;
+          background-color: #333;
+          border-radius: 50%;
+        }
+        
+        .progress {
+          height: 10px;
+          border-radius: var(--radius-sm);
+          overflow: hidden;
+          background-color: var(--neutral-mid);
+          margin-bottom: 1rem;
+        }
+        
+        .progress-bar {
+          transition: width 1s ease;
+        }
+        
+        .bg-danger {
+          background-color: var(--negative-color) !important;
+        }
+        
+        .bg-secondary {
+          background-color: var(--neutral-color) !important;
+        }
+        
+        .bg-success {
+          background-color: var(--positive-color) !important;
+        }
+        
+        .example-card {
+          cursor: pointer;
+          transition: var(--transition);
+          border-radius: var(--radius-sm);
+          height: 100%;
+        }
+        
+        .example-card:hover {
+          transform: translateY(-5px);
+          box-shadow: var(--shadow-lg);
+          border-left: 3px solid var(--primary-color);
+        }
+        
+        .text-very-negative { color: #d00000; font-weight: 600; }
+        .text-negative { color: #e63946; font-weight: 600; }
+        .text-slightly-negative { color: #f77f00; font-weight: 600; }
+        .text-neutral { color: #457b9d; font-weight: 600; }
+        .text-slightly-positive { color: #2a9d8f; font-weight: 600; }
+        /* .text-positive { color: #2d6a4f; font-weight: 600; } */
+        /* .text-very-positive { color: #1b4332; font-weight: 600; } */
+        .text-positive { color: #33b949; font-weight: 600; }
+        .text-very-positive { color: #258e3a; font-weight: 600; }
+        
+        #sentiment-label {
+          font-size: 1.4rem;
+          font-weight: 600;
+        }
+        
+        .results-section h5 {
+          font-weight: 600;
+          color: var(--primary-dark);
+          margin-bottom: 1rem;
+        }
+        
+        .membership-label {
+          font-weight: 500;
+        }
+        
+        .loading {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        }
+        
+        .spinner-border {
+          width: 1.5rem;
+          height: 1.5rem;
+          margin-right: 0.75rem;
+          color: var(--primary-color);
+        }
+        
+        /* Animation for results */
+        @keyframes fadeIn {
+          from { opacity: 0; transform: translateY(10px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .results-section {
+          animation: fadeIn 0.5s ease forwards;
+        }
+        
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+          .card-header, .card-body {
+            padding: 1.2rem;
+          }
+          
+          .nav-tabs .nav-link {
+            padding: 0.5rem 1rem;
+          }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="text-center mb-4">
+            <h1 class="display-4 app-title">Fuzzy Sentiment Analysis</h1>
+            <p class="lead">Analyze text sentiment using fuzzy logic for more nuanced results</p>
+        </div>
+        
+        <ul class="nav nav-tabs mb-4 justify-content-center" id="myTab" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active" id="analyzer-tab" data-bs-toggle="tab" data-bs-target="#analyzer" type="button" role="tab" aria-controls="analyzer" aria-selected="true">
+                    <i class="fas fa-chart-bar me-2"></i>Analyzer
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="examples-tab" data-bs-toggle="tab" data-bs-target="#examples" type="button" role="tab" aria-controls="examples" aria-selected="false">
+                    <i class="fas fa-list me-2"></i>Examples
+                </button>
+            </li>
+        </ul>
+        
+        <div class="tab-content" id="myTabContent">
+            <div class="tab-pane fade show active" id="analyzer" role="tabpanel" aria-labelledby="analyzer-tab">
+                <div class="card">
+                    <div class="card-header">
+                        <h4><i class="fas fa-keyboard me-2"></i>Enter Text to Analyze</h4>
+                    </div>
+                    <div class="card-body">
+                        <form id="sentiment-form">
+                            <div class="mb-3">
+                                <textarea class="form-control" id="text-input" rows="4" placeholder="Type or paste text here..."></textarea>
+                            </div>
+                            <div class="d-grid">
+                                <button type="submit" class="btn btn-primary">
+                                    <span class="loading" style="display: none;">
+                                        <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                                        Analyzing...
+                                    </span>
+                                    <span class="not-loading">
+                                        <i class="fas fa-search me-2"></i>Analyze Sentiment
+                                    </span>
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <div class="card results-section" id="results-card" style="display: none;">
+                    <div class="card-header">
+                        <h4><i class="fas fa-chart-pie me-2"></i>Sentiment Analysis Results</h4>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-4">
+                            <h5>Overall Sentiment: <span id="sentiment-label" class=""></span></h5>
+                            <p>Sentiment Score: <span id="sentiment-score" class="fw-bold"></span></p>
+                            
+                            <div class="sentiment-meter">
+                                <div class="sentiment-pointer" id="sentiment-pointer"></div>
+                            </div>
+                            <div class="d-flex justify-content-between">
+                                <small><i class="fas fa-frown me-1"></i>Very Negative</small>
+                                <small><i class="fas fa-meh me-1"></i>Neutral</small>
+                                <small><i class="fas fa-smile me-1"></i>Very Positive</small>
+                            </div>
+                        </div>
+                        
+                        <h5><i class="fas fa-chart-bar me-2"></i>Membership Degrees</h5>
+                        <div class="mb-2">
+                            <div class="d-flex justify-content-between">
+                                <span class="membership-label"><i class="fas fa-thumbs-down me-1"></i>Negative</span>
+                                <span id="negative-value" class="fw-bold"></span>
+                            </div>
+                            <div class="progress">
+                                <div id="negative-bar" class="progress-bar bg-danger" role="progressbar" style="width: 0%"></div>
+                            </div>
+                        </div>
+                        <div class="mb-2">
+                            <div class="d-flex justify-content-between">
+                                <span class="membership-label"><i class="fas fa-balance-scale me-1"></i>Neutral</span>
+                                <span id="neutral-value" class="fw-bold"></span>
+                            </div>
+                            <div class="progress">
+                                <div id="neutral-bar" class="progress-bar bg-secondary" role="progressbar" style="width: 0%"></div>
+                            </div>
+                        </div>
+                        <div class="mb-2">
+                            <div class="d-flex justify-content-between">
+                                <span class="membership-label"><i class="fas fa-thumbs-up me-1"></i>Positive</span>
+                                <span id="positive-value" class="fw-bold"></span>
+                            </div>
+                            <div class="progress">
+                                <div id="positive-bar" class="progress-bar bg-success" role="progressbar" style="width: 0%"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="tab-pane fade" id="examples" role="tabpanel" aria-labelledby="examples-tab">
+                <div class="card">
+                    <div class="card-header">
+                        <h4><i class="fas fa-lightbulb me-2"></i>Example Sentences</h4>
+                        <p class="text-muted mb-0">Click on any example to analyze it</p>
+                    </div>
+                    <div class="card-body">
+                        <div class="d-flex align-items-center justify-content-center py-4" id="examples-loading">
+                            <!-- <div class="spinner-border" role="status">
+                                <span class="visually-hidden">Loading...</span>
+                            </div> -->
+                            <!-- <span>Loading examples...</span> -->
+                        </div>
+                        <div class="row" id="examples-container">
+                            <!-- Examples will be loaded here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <footer class="text-center mt-4 text-muted">
+            <p><small>Fuzzy Sentiment Analysis System &copy; 2025</small></p>
+        </footer>
+    </div>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.1.3/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const sentimentForm = document.getElementById('sentiment-form');
+            const textInput = document.getElementById('text-input');
+            const resultsCard = document.getElementById('results-card');
+            const sentimentLabel = document.getElementById('sentiment-label');
+            const sentimentScore = document.getElementById('sentiment-score');
+            const sentimentPointer = document.getElementById('sentiment-pointer');
+            const negativeBar = document.getElementById('negative-bar');
+            const neutralBar = document.getElementById('neutral-bar');
+            const positiveBar = document.getElementById('positive-bar');
+            const negativeValue = document.getElementById('negative-value');
+            const neutralValue = document.getElementById('neutral-value');
+            const positiveValue = document.getElementById('positive-value');
+            const examplesTab = document.getElementById('examples-tab');
+            const examplesContainer = document.getElementById('examples-container');
+            const examplesLoading = document.getElementById('examples-loading');
+            
+            sentimentForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                const text = textInput.value.trim();
+                if (!text) return;
+                
+                // Show loading state
+                document.querySelector('.loading').style.display = 'inline-block';
+                document.querySelector('.not-loading').style.display = 'none';
+                
+                // Send request to analyze sentiment
+                fetch('/analyze', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ text: text }),
+                })
+                .then(response => response.json())
+                .then(data => {
+                    // Hide loading state
+                    document.querySelector('.loading').style.display = 'none';
+                    document.querySelector('.not-loading').style.display = 'inline-block';
+                    
+                    // Update results
+                    updateResults(data);
+                    
+                    // Show results section
+                    resultsCard.style.display = 'block';
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    document.querySelector('.loading').style.display = 'none';
+                    document.querySelector('.not-loading').style.display = 'inline-block';
+                    alert('An error occurred while analyzing the text.');
+                });
+            });
+            
+            // Function to update results in the UI
+            function updateResults(data) {
+                // Update sentiment label
+                sentimentLabel.textContent = data.fuzzy_label;
+                sentimentLabel.className = getSentimentClass(data.fuzzy_label);
+                
+                // Update sentiment score
+                sentimentScore.textContent = data.crisp_score;
+                
+                // Update sentiment pointer
+                sentimentPointer.style.left = (data.crisp_score * 100) + '%';
+                
+                // Update membership bars
+                updateMembershipBar(negativeBar, negativeValue, data.membership.negative);
+                updateMembershipBar(neutralBar, neutralValue, data.membership.neutral);
+                updateMembershipBar(positiveBar, positiveValue, data.membership.positive);
+            }
+            
+            // Function to update a membership bar
+            function updateMembershipBar(bar, value, percentage) {
+                bar.style.width = (percentage * 100) + '%';
+                value.textContent = percentage;
+            }
+            
+            // Function to get CSS class for sentiment label
+            function getSentimentClass(label) {
+                return 'text-' + label.replace(' ', '-');
+            }
+            
+            // Load examples when examples tab is clicked
+            examplesTab.addEventListener('click', function() {
+                if (examplesContainer.children.length === 0) {
+                    examplesLoading.style.display = 'flex';
+                    
+                    fetch('/examples')
+                        .then(response => response.json())
+                        .then(data => {
+                            examplesLoading.style.display = 'none';
+                            
+                            data.forEach(example => {
+                                const col = document.createElement('div');
+                                col.className = 'col-md-6 mb-3';
+                                
+                                const card = document.createElement('div');
+                                card.className = 'card example-card h-100';
+                                card.addEventListener('click', function() {
+                                    // Set the text in the input field
+                                    textInput.value = example.text;
+                                    
+                                    // Switch to analyzer tab
+                                    document.getElementById('analyzer-tab').click();
+                                    
+                                    // Submit the form
+                                    sentimentForm.dispatchEvent(new Event('submit'));
+                                });
+                                
+                                const cardBody = document.createElement('div');
+                                cardBody.className = 'card-body';
+                                
+                                const textP = document.createElement('p');
+                                textP.className = 'mb-2';
+                                textP.textContent = example.text;
+                                
+                                const sentimentP = document.createElement('p');
+                                sentimentP.className = 'mb-0 ' + getSentimentClass(example.analysis.fuzzy_label);
+                                sentimentP.textContent = example.analysis.fuzzy_label;
+                                
+                                cardBody.appendChild(textP);
+                                cardBody.appendChild(sentimentP);
+                                card.appendChild(cardBody);
+                                col.appendChild(card);
+                                examplesContainer.appendChild(col);
+                            });
+                        })
+                        .catch(error => {
+                            console.error('Error:', error);
+                            examplesLoading.style.display = 'none';
+                            examplesContainer.innerHTML = '<div class="alert alert-danger">Failed to load examples</div>';
+                        });
+                }
+            });
+        });
+    </script>
+</body>
+</html>
