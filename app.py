@@ -2,8 +2,6 @@
 from flask import Flask, request, jsonify, render_template
 import nltk
 import os
-import matplotlib.pyplot as plt
-import numpy as np
 import json
 from nltk.tokenize import word_tokenize
 from nltk.corpus import stopwords

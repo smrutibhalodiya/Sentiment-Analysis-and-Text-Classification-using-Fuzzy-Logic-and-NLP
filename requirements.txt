@@ -1,0 +1,6 @@
+flask==2.0.1
+nltk==3.6.3
+scikit-fuzzy==0.4.2
+numpy==1.21.3
+matplotlib==3.4.3
+python-docx==0.8.11
